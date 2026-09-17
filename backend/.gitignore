@@ -1,0 +1,6 @@
+# Base de datos local
+*.db
+
+# Caché de Python
+__pycache__/
+*.pyc
