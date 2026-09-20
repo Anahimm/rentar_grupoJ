@@ -5,6 +5,7 @@ from strawberry.fastapi import GraphQLRouter
 from app.core.database import engine, Base
 from app.models import base
 from app.api.vehiculos import router as vehiculos_router
+from app.api.clientes import router as clientes_router
 from app.api.graphql.schema import schema
 
 Base.metadata.create_all(bind=engine)
@@ -26,6 +27,7 @@ app.add_middleware(
 
 # RUTAS REST
 app.include_router(vehiculos_router.router)
+app.include_router(clientes_router.router)
 
 # RUTA GRAPHQL
 graphql_app = GraphQLRouter(schema)
