@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, Float, Boolean, Date, ForeignKey
+from datetime import datetime
+from sqlalchemy import Column, Integer, String, Float, Boolean, Date, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 
@@ -34,9 +35,13 @@ class Reserva(Base):
     id = Column(Integer, primary_key=True, index=True)
     cliente_id = Column(Integer, ForeignKey("clientes.id"), nullable=False)
     vehiculo_id = Column(Integer, ForeignKey("vehiculos.id"), nullable=False)
-    fecha_inicio = Column(Date, nullable=False)
-    fecha_fin = Column(Date, nullable=False)
-    estado = Column(String, default="CONFIRMADA") # CONFIRMADA, FINALIZADO, CANCELADO
+    fecha_inicio = Column(DateTime, nullable=False)
+    fecha_fin = Column(DateTime, nullable=False)
+    # Se guarda el precio del momento de la reserva para que el importe no cambie si se actualiza el vehículo
+    precio_diario = Column(Float, nullable=False)
+    importe_total = Column(Float, nullable=False)
+    fecha_creacion = Column(DateTime, default=datetime.now)
+    estado = Column(String, default="CONFIRMADA") # CONFIRMADA, CANCELADA
 
     cliente = relationship("Cliente")
     vehiculo = relationship("Vehiculo")
