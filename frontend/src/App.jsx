@@ -3,6 +3,8 @@ import Vehiculos from './pages/Vehiculos';
 import Clientes from './pages/Clientes';
 import Historial from './pages/Historial';
 import BuscadorDisponibilidad from './pages/BuscadorDisponibilidad';
+import NuevaReserva from './pages/NuevaReserva';
+import Reservas from './pages/Reservas';
 
 export default function App() {
   return (
@@ -30,6 +32,12 @@ export default function App() {
               <li className="nav-item">
                 <Link className="nav-link" to="/historial">Historial</Link>
               </li>
+              <li className="nav-item">
+                <Link className="nav-link" to="/reservas/nueva">Nueva Reserva</Link>
+              </li>
+              <li className="nav-item">
+                <Link className="nav-link" to="/reservas">Reservas</Link>
+              </li>
             </ul>
           </div>
         </div>
@@ -46,6 +54,10 @@ export default function App() {
           {/* Dominio Marcos */}
           <Route path="/clientes" element={<Clientes />} />
           <Route path="/historial" element={<Historial />} />
+
+          {/* Dominio Lucía */}
+          <Route path="/reservas/nueva" element={<NuevaReserva />} />
+          <Route path="/reservas" element={<Reservas />} />
         </Routes>
       </div>
     </BrowserRouter>
