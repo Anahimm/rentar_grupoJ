@@ -1,12 +1,12 @@
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-
-// Importación de tus pantallas
+import { BrowserRouter, Routes, Route, Link, Navigate } from 'react-router-dom';
 import Vehiculos from './pages/Vehiculos';
+import Clientes from './pages/Clientes';
+import Historial from './pages/Historial';
 import BuscadorDisponibilidad from './pages/BuscadorDisponibilidad';
 
 export default function App() {
   return (
-    <Router>
+    <BrowserRouter>
       {/* Barra de Navegación Bootstrap */}
       <nav className="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
         <div className="container">
@@ -19,12 +19,17 @@ export default function App() {
           <div className="collapse navbar-collapse" id="navbarNav">
             <ul className="navbar-nav me-auto">
               <li className="nav-item">
-                <Link className="nav-link" to="/">Flota (ABM)</Link>
+                <Link className="nav-link" to="/vehiculos">Flota (ABM)</Link>
               </li>
               <li className="nav-item">
                 <Link className="nav-link" to="/buscar">Buscar Disponibilidad</Link>
               </li>
-              {/* Acá van los Links a Clientes y Reservas */}
+              <li className="nav-item">
+                <Link className="nav-link" to="/clientes">Clientes</Link>
+              </li>
+              <li className="nav-item">
+                <Link className="nav-link" to="/historial">Historial</Link>
+              </li>
             </ul>
           </div>
         </div>
@@ -33,17 +38,18 @@ export default function App() {
       {/* Contenedor dinámico donde se cargan las pantallas */}
       <div className="container">
         <Routes>
-          {/* Tu Dominio: Vehículos */}
-          <Route path="/" element={<Vehiculos />} />
+          <Route path="/" element={<Navigate to="/vehiculos" replace />} />
+          {/* Dominio Anahi */}
+          <Route path="/vehiculos" element={<Vehiculos />} />
           <Route path="/buscar" element={<BuscadorDisponibilidad />} />
 
-          {/* Dominio Clientes - Comentado hasta que lo armen */}
-          {/* <Route path="/clientes" element={<Clientes />} /> */}
-
-          {/* Dominio Reservas - Comentado hasta que lo armen */}
-          {/* <Route path="/reservas" element={<Reservas />} /> */}
+          {/* Dominio Marcos */}
+          <Route path="/clientes" element={<Clientes />} />
+          <Route path="/historial" element={<Historial />} />
         </Routes>
       </div>
-    </Router>
+    </BrowserRouter>
   );
 }
+
+

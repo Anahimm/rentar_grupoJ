@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, Float, Boolean, Date
+from sqlalchemy import Column, Integer, String, Float, Boolean, Date, ForeignKey
+from sqlalchemy.orm import relationship
 from app.core.database import Base
 
 class Vehiculo(Base):
@@ -13,7 +14,7 @@ class Vehiculo(Base):
     tipo_vehiculo = Column(String)
     precio_diario = Column(Float, nullable=False)
     estado = Column(String, default="DISPONIBLE") 
-    activo = Column(Boolean, default=True) 
+    activo = Column(Boolean, default=True)
 
 class Cliente(Base):
     __tablename__ = "clientes"
@@ -26,3 +27,16 @@ class Cliente(Base):
     telefono = Column(String)
     fecha_nacimiento = Column(Date)
     activo = Column(Boolean, default=True)
+
+class Reserva(Base):
+    __tablename__ = "reservas"
+
+    id = Column(Integer, primary_key=True, index=True)
+    cliente_id = Column(Integer, ForeignKey("clientes.id"), nullable=False)
+    vehiculo_id = Column(Integer, ForeignKey("vehiculos.id"), nullable=False)
+    fecha_inicio = Column(Date, nullable=False)
+    fecha_fin = Column(Date, nullable=False)
+    estado = Column(String, default="CONFIRMADA") # CONFIRMADA, FINALIZADO, CANCELADO
+
+    cliente = relationship("Cliente")
+    vehiculo = relationship("Vehiculo")
