@@ -1,17 +1,32 @@
 import { useState } from 'react';
+import DatePicker, { registerLocale } from 'react-datepicker';
+import es from 'date-fns/locale/es';
+import "react-datepicker/dist/react-datepicker.css";
+registerLocale('es', es);
 
 export default function BuscadorDisponibilidad() {
     const [vehiculos, setVehiculos] = useState([]);
     const [marca, setMarca] = useState('');
     const [precioMaximo, setPrecioMaximo] = useState('');
+    
+    // Ahora los estados inicializan en null porque van a guardar objetos Date
+    const [fechaDesde, setFechaDesde] = useState(null);
+    const [fechaHasta, setFechaHasta] = useState(null);
 
     const buscarDisponibilidad = async (e) => {
         e.preventDefault();
 
-        // Consulta GraphQL dinámica según los inputs
+        if (!fechaDesde || !fechaHasta) {
+            alert("Por favor, seleccioná la fecha de retiro y devolución.");
+            return;
+        }
+
+        // Convertimos el objeto Date a formato ISO (texto) para que GraphQL lo entienda
         const query = `
         query {
             consultarDisponibilidad(
+            fechaDesde: "${fechaDesde.toISOString()}"
+            fechaHasta: "${fechaHasta.toISOString()}"
             ${marca ? `marca: "${marca}"` : ""}
             ${precioMaximo ? `precioMaximo: ${precioMaximo}` : ""}
             ) {
@@ -41,8 +56,40 @@ export default function BuscadorDisponibilidad() {
         <div className="container mt-4">
             <h2>Buscar Vehículos Disponibles</h2>
 
-            {/* Formulario de Filtros */}
-            <form onSubmit={buscarDisponibilidad} className="row g-3 mb-4">
+            <form onSubmit={buscarDisponibilidad} className="row g-3 mb-4 align-items-end">
+                <div className="col-auto">
+                    <label className="form-label mb-1" style={{fontSize: '0.85rem', color: '#6c757d'}}>Retiro (fecha y hora) *</label>
+                    <DatePicker
+                        selected={fechaDesde}
+                        onChange={(date) => setFechaDesde(date)}
+                        showTimeSelect
+                        timeFormat="HH:mm"
+                        timeIntervals={30}
+                        timeCaption="Hora"
+                        dateFormat="dd/MM/yyyy HH:mm"
+                        locale="es"
+                        className="form-control"
+                        placeholderText="Elegí día y hora"
+                        required
+                    />
+                </div>
+                <div className="col-auto">
+                    <label className="form-label mb-1" style={{fontSize: '0.85rem', color: '#6c757d'}}>Devolución (fecha y hora) *</label>
+                    <DatePicker
+                        selected={fechaHasta}
+                        onChange={(date) => setFechaHasta(date)}
+                        showTimeSelect
+                        timeFormat="HH:mm"
+                        timeIntervals={30}
+                        timeCaption="Hora"
+                        dateFormat="dd/MM/yyyy HH:mm"
+                        locale="es"
+                        className="form-control"
+                        placeholderText="Elegí día y hora"
+                        required
+                    />
+                </div>
+
                 <div className="col-auto">
                     <input
                         type="text"
@@ -66,7 +113,6 @@ export default function BuscadorDisponibilidad() {
                 </div>
             </form>
 
-            {/* Tabla de Resultados */}
             <table className="table table-striped">
                 <thead>
                     <tr>

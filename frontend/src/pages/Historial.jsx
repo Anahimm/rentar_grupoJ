@@ -44,7 +44,7 @@ const Historial = () => {
 
     return (
         <div>
-            <h2 className="mb-4">Historial de Alquileres (GraphQL)</h2>
+            <h2 className="mb-4">Historial de Alquileres</h2>
 
             <form onSubmit={consultarHistorial} className="mb-5 p-4 border rounded bg-light">
                 <h4>Consultar Historial por Cliente</h4>

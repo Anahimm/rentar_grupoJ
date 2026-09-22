@@ -21,7 +21,7 @@ export default function App() {
           <div className="collapse navbar-collapse" id="navbarNav">
             <ul className="navbar-nav me-auto">
               <li className="nav-item">
-                <Link className="nav-link" to="/vehiculos">Flota (ABM)</Link>
+                <Link className="nav-link" to="/vehiculos">Flota</Link>
               </li>
               <li className="nav-item">
                 <Link className="nav-link" to="/buscar">Buscar Disponibilidad</Link>

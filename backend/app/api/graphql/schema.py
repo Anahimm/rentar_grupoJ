@@ -4,7 +4,7 @@ from datetime import date, datetime
 from strawberry.types import Info
 from app.core.database import SessionLocal
 from app.models.base import Reserva, Vehiculo, Cliente
-from app.services.reservas import a_hora_local, calcular_dias
+from app.services.reservas import a_hora_local, calcular_dias, vehiculo_disponible
 
 # Estructura de datos que GraphQL le va a devolver al Frontend
 @strawberry.type
@@ -67,44 +67,67 @@ class Query:
     def ping(self) -> str:
         return "GraphQL configurado y funcionando"
 
-    @strawberry.field
+    @strawberry.field(description="Busca vehículos disponibles aplicando filtros opcionales de características y fechas.")
     def consultar_disponibilidad(
         self,
-        tipo_vehiculo: Optional[str] = None,
-        marca: Optional[str] = None,
-        modelo: Optional[str] = None,
-        precio_maximo: Optional[float] = None
-        # Las fechas se agregan cuando se armen las reservas
+        tipo_vehiculo: Annotated[Optional[str], strawberry.argument(description="Ej: SEDAN, SUV")] = None,
+        marca: Annotated[Optional[str], strawberry.argument(description="Ej: Toyota")] = None,
+        modelo: Annotated[Optional[str], strawberry.argument(description="Ej: Corolla")] = None,
+        precio_maximo: Annotated[Optional[float], strawberry.argument(description="Precio máximo por día")] = None,
+        fecha_desde: Annotated[Optional[datetime], strawberry.argument(description="Fecha de retiro del vehículo")] = None,
+        fecha_hasta: Annotated[Optional[datetime], strawberry.argument(description="Fecha de devolución del vehículo")] = None
     ) -> List[VehiculoGraphQL]:
         
-        # Mocking de datos para testear
-        mock_db = [
-            VehiculoGraphQL(patente="AB123CD", marca="Toyota", modelo="Corolla", anio=2022, color="Blanco", tipo_vehiculo="SEDAN", precio_diario=15000),
-            VehiculoGraphQL(patente="EF456GH", marca="Ford", modelo="Ranger", anio=2023, color="Gris", tipo_vehiculo="PICKUP", precio_diario=25000),
-            VehiculoGraphQL(patente="IJ789KL", marca="Toyota", modelo="Yaris", anio=2021, color="Rojo", tipo_vehiculo="HATCHBACK", precio_diario=12000)
-        ]
+        db = SessionLocal()
+        try:
+            # Consulta base a la tabla real de Vehículos
+            query = db.query(Vehiculo)
 
-        # Aplicación de los filtros opcionales
-        resultados = mock_db
-        if tipo_vehiculo:
-            resultados = [v for v in resultados if v.tipo_vehiculo == tipo_vehiculo]
-        if marca:
-            resultados = [v for v in resultados if v.marca == marca]
-        if modelo:
-            resultados = [v for v in resultados if v.modelo == modelo]
-        if precio_maximo:
-            resultados = [v for v in resultados if v.precio_diario <= precio_maximo]
+            # Aplicación de los filtros opcionales
+            if tipo_vehiculo:
+                query = query.filter(Vehiculo.tipo_vehiculo.ilike(tipo_vehiculo))
+            if marca:
+                query = query.filter(Vehiculo.marca.ilike(marca))
+            if modelo:
+                query = query.filter(Vehiculo.modelo.ilike(modelo))
+            if precio_maximo:
+                query = query.filter(Vehiculo.precio_diario <= precio_maximo)
+                
+            vehiculos_db = query.all()
+            resultados = []
+        
+            # Mapeamos a VehiculoGraphQL y filtramos por fecha
+            for v in vehiculos_db:
+                # Si nos pasaron ambas fechas, verificamos la disponibilidad
+                if fecha_desde and fecha_hasta:
+                    # Si la función dice que NO está disponible, saltamos este vehículo
+                    if not vehiculo_disponible(db, v.id, fecha_desde, fecha_hasta):
+                        continue
+                
+                resultados.append(
+                    VehiculoGraphQL(
+                        patente=v.patente,
+                        marca=v.marca,
+                        modelo=v.modelo,
+                        anio=v.anio,
+                        color=v.color,
+                        tipo_vehiculo=v.tipo_vehiculo,
+                        precio_diario=v.precio_diario
+                    )
+                )
 
-        return resultados
-    
-    @strawberry.field
+            return resultados
+        finally:
+            db.close()
+            
+    @strawberry.field(description="Consulta el historial de alquileres. Un CLIENTE solo ve el suyo")
     def historial_alquileres(self, cliente_id: int) -> List[HistorialAlquilerType]:
         db = SessionLocal()
         try:
-            # Filtramos reservas del cliente con estado FINALIZADO o CANCELADO
+            # Filtramos reservas del cliente con estado FINALIZADO o CANCELADA
             reservas = db.query(Reserva).filter(
                 Reserva.cliente_id == cliente_id,
-                Reserva.estado.in_(["FINALIZADO", "CANCELADO"])
+                Reserva.estado.in_(["FINALIZADO", "CANCELADA"])
             ).all()
 
             resultado = []
